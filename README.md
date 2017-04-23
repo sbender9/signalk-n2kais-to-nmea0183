@@ -13,18 +13,10 @@ Signal K provider to convert N2K AIS to NMEA 0183
         "type": "providers/execute",
         "options": {
           "command": "actisense-serial /dev/actisense",
-          "commandx": "actisense-serial /dev/actisense  | tee /tmp/n2k.log",
           "toChildProcess": "nmea2000out"
         }
       }, {
         "type": "providers/liner"
-      }, {
-        "type": "providers/log",
-        "enabled": false,
-        "options": {
-          "logdir": "/home/sbender/logs/",
-          "discriminator": "A"
-        }
       }, {
         "type": "providers/n2kAnalyzer"
       }, {
