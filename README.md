@@ -8,6 +8,8 @@ Signal K provider to convert N2K AIS to NMEA 0183
 
 This does direct conversion from NMEA 2000 AIS messages to NMEA 0183 sentences and makes them available on the node server 0183 TPC port.
 
+You can then get AIS data in apps like iSailor, iNavX, etc.
+
 ```json
     {
       "id": "actisense",
