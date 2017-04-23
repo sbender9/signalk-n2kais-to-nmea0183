@@ -6,6 +6,8 @@ Signal K provider to convert N2K AIS to NMEA 0183
 3. Install the latest ggencoder: npm install ggencoder
 4. Update your settings to include the provider 
 
+This does direct conversion from NMEA 2000 AIS messages to NMEA 0183 sentences and makes them available on the node server 0183 TPC port.
+
 ```json
     {
       "id": "actisense",
