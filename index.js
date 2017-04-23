@@ -141,11 +141,11 @@ AIS.prototype._transform = function(msg, encoding, done) {
           cargo: type,
           callsign: msg['fields'].Callsign,
           shipname: msg['fields'].Name,
-          dimA: msg['fields'].Length,
-          dimB: msg['fields'].Beam,
-          dimC: msg['fields']["Position reference from Starboard"],
-          dimD: msg['fields']["Position reference from Bow"],
-          draught: msg['fields'].Draft,
+          dimA: msg['fields']["Position reference from Bow"],
+          dimB: msg['fields'].Length - msg['fields']["Position reference from Bow"],
+          dimC: msg['fields'].Beam - msg['fields']["Position reference from Starboard"],
+          dimD: msg['fields']["Position reference from Starboard"],
+          draught: msg['fields'].Draft/10,
           destination: msg['fields'].Destination
         })
         
@@ -192,10 +192,10 @@ AIS.prototype._transform = function(msg, encoding, done) {
           mmsi: msg['fields']['User ID'],
           cargo: type,
           callsign: msg['fields'].Callsign,
-          dimA: msg['fields'].Length,
-          dimB: msg['fields'].Beam,
-          dimC: msg['fields']["Position reference from Starboard"],
-          dimD: msg['fields']["Position reference from Bow"],
+          dimA: msg['fields']["Position reference from Bow"],
+          dimB: msg['fields'].Length - msg['fields']["Position reference from Bow"],
+          dimC: msg['fields'].Beam - msg['fields']["Position reference from Starboard"],
+          dimD: msg['fields']["Position reference from Starboard"]
         })
       }
       break;
