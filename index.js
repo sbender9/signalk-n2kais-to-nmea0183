@@ -203,7 +203,7 @@ AIS.prototype._transform = function(msg, encoding, done) {
     if ( enc )
     {
       var sentence = enc.nmea
-      debug("Decoded: " + util.inspect(new AisDecode(sentence, null), {showHidden: false, depth: 5}))
+      //debug("Decoded: " + util.inspect(new AisDecode(sentence, null), {showHidden: false, depth: 5}))
       debug("sending: " + sentence)
       this.options.app.emit('nmea0183out', sentence)
     }
