@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-var Transform = require('stream').Transform;
 const AisEncode = require("ggencoder").AisEncode
 const AisDecode = require("ggencoder").AisDecode
-const debug = require('debug')('n2k-ais-to-nmea0183')
+const debug = require('debug')('signalk-n2kais-to-nmea0183')
 const util = require('util')
-
-function AIS(options) {
-  Transform.call(this, {
-    objectMode: true
-  });
-  this.options = options;
-}
-
-require('util').inherits(AIS, Transform);
 
 const stateMapping = {
   'Under way using engine': 0,
@@ -45,7 +35,7 @@ const stateMapping = {
 }
 
 
-typeMapping = {
+const typeMapping = {
   "unavailable": 0,
   "Wing In Ground": 20,
   "Wing In Ground (no other information)": 29,
@@ -95,125 +85,143 @@ typeMapping = {
   "Other (no additional information": 99
 }
 
+module.exports = function(app) {
+  var plugin = {
+  };
 
-AIS.prototype._transform = function(msg, encoding, done) {
-  this.push(msg);
-  try {
-    var enc = null
-    switch ( msg.pgn )
-    {
-      case 129038:
-      {
-        //debug("Data: " + util.inspect(msg, {showHidden: false, depth: 5}))
-        rot = msg['fields']['Rate of Turn']
-        if ( rot !== undefined && rot != 0 )
-        {
-          trot = rot < 0 ? rot * -1 : rot
-          debug("sqrt: " + Math.sqrt(trot))
-          trot = (4.733 * Math.sqrt(trot * 3437.74677078493)).toFixed(0)
-          if ( rot < 0 )
-            trot *= -1
-          rot = trot
-        }
-        enc = new AisEncode({
-          aistype: 3, // class A position report
-          repeat: 0,
-          mmsi: msg['fields']['User ID'],
-          navstatus: stateMapping[msg['fields']['Nav Status']],
-          sog: mpsToKn(msg['fields'].SOG),
-          lon: msg['fields'].Longitude,
-          lat: msg['fields'].Latitude,
-          cog: radsToDeg(msg['fields'].COG).toFixed(0),
-          hdg: radsToDeg(msg['fields'].Heading).toFixed(0),
-          rot: rot
-        })
-      }
-      break;
+  plugin.id = "signalk-n2kais-to-nmea0183"
+  plugin.name = "SignalK N2K AIS to NMEA0183"
+  plugin.description = plugin.name
 
-      case 129794:
-      {
-        type = typeMapping[msg['fields']['Type of ship']]
-        enc = new AisEncode({
-          aistype: 5, //class A static
-          repeat: 0,
-          mmsi: msg['fields']['User ID'],
-          mso: msg['fields']['IMO number'],
-          cargo: type,
-          callsign: msg['fields'].Callsign,
-          shipname: msg['fields'].Name,
-          dimA: msg['fields']["Position reference from Bow"],
-          dimB: msg['fields'].Length - msg['fields']["Position reference from Bow"],
-          dimC: msg['fields'].Beam - msg['fields']["Position reference from Starboard"],
-          dimD: msg['fields']["Position reference from Starboard"],
-          draught: msg['fields'].Draft/10,
-          destination: msg['fields'].Destination
-        })
-        
-      }
-      break;
-
-      case 129039:
-      {
-        //debug("MMSI: " + msg.fields['User ID'])
-        
-        enc =  new AisEncode({
-          aistype: 18, // class B position report
-          repeat: 0,
-          mmsi: msg['fields']['User ID'],
-          sog: mpsToKn(msg['fields'].SOG),
-          accuracy: msg.fields['Position Accuracy'] == "Low" ? 0 : 1, 
-          lon: msg['fields'].Longitude,
-          lat: msg['fields'].Latitude,
-          cog: radsToDeg(msg['fields'].COG).toFixed(0),
-          hdg: radsToDeg(msg['fields'].Heading).toFixed(0),
-        })
-      }
-      break;
-
-      case 129809:
-      {
-        enc =  new AisEncode({
-          aistype: 24, // class B static
-          repeat: 0,
-          part: 0,
-          mmsi: msg['fields']['User ID'],
-          shipname: msg['fields'].Name
-        })
-      }
-      break;
-
-      case 129810:
-      {
-        type = typeMapping[msg['fields']['Type of ship']]
-        enc =  new AisEncode({
-          aistype: 24, // class B static
-          repeat: 0,
-          part: 1,
-          mmsi: msg['fields']['User ID'],
-          cargo: type,
-          callsign: msg['fields'].Callsign,
-          dimA: msg['fields']["Position reference from Bow"],
-          dimB: msg['fields'].Length - msg['fields']["Position reference from Bow"],
-          dimC: msg['fields'].Beam - msg['fields']["Position reference from Starboard"],
-          dimD: msg['fields']["Position reference from Starboard"]
-        })
-      }
-      break;
-    }
-    if ( enc )
-    {
-      var sentence = enc.nmea
-      //debug("Decoded: " + util.inspect(new AisDecode(sentence, null), {showHidden: false, depth: 5}))
-      debug("sending: " + sentence)
-      this.options.app.emit('nmea0183out', sentence)
-    }
-  } catch (e) {
-    console.error(e)
+  plugin.schema = {
+    type: "object",
+    properties: {}
   }
-  done();
-};
+  
+  plugin.start = function(options) {
 
-module.exports = AIS;
+    app.on("n2KAnalyzerOut", function(msg) {
+      try {
+        var enc = null
+        switch ( msg.pgn )
+        {
+          case 129038:
+          {
+            //debug("Data: " + util.inspect(msg, {showHidden: false, depth: 5}))
+            rot = msg['fields']['Rate of Turn']
+            if ( rot !== undefined && rot != 0 )
+            {
+              trot = rot < 0 ? rot * -1 : rot
+          debug("sqrt: " + Math.sqrt(trot))
+              trot = (4.733 * Math.sqrt(trot * 3437.74677078493)).toFixed(0)
+              if ( rot < 0 )
+                trot *= -1
+              rot = trot
+            }
+            enc = new AisEncode({
+              aistype: 3, // class A position report
+              repeat: 0,
+              mmsi: msg['fields']['User ID'],
+              navstatus: stateMapping[msg['fields']['Nav Status']],
+              sog: mpsToKn(msg['fields'].SOG),
+              lon: msg['fields'].Longitude,
+              lat: msg['fields'].Latitude,
+              cog: radsToDeg(msg['fields'].COG).toFixed(0),
+              hdg: radsToDeg(msg['fields'].Heading).toFixed(0),
+              rot: rot
+            })
+          }
+          break;
+          
+          case 129794:
+          {
+            type = typeMapping[msg['fields']['Type of ship']]
+            enc = new AisEncode({
+              aistype: 5, //class A static
+              repeat: 0,
+              mmsi: msg['fields']['User ID'],
+              mso: msg['fields']['IMO number'],
+              cargo: type,
+              callsign: msg['fields'].Callsign,
+              shipname: msg['fields'].Name,
+              dimA: msg['fields']["Position reference from Bow"],
+              dimB: msg['fields'].Length - msg['fields']["Position reference from Bow"],
+              dimC: msg['fields'].Beam - msg['fields']["Position reference from Starboard"],
+              dimD: msg['fields']["Position reference from Starboard"],
+              draught: msg['fields'].Draft/10,
+              destination: msg['fields'].Destination
+            })
+        
+          }
+          break;
+
+          case 129039:
+          {
+            //debug("MMSI: " + msg.fields['User ID'])
+            
+            enc =  new AisEncode({
+              aistype: 18, // class B position report
+              repeat: 0,
+              mmsi: msg['fields']['User ID'],
+              sog: mpsToKn(msg['fields'].SOG),
+              accuracy: msg.fields['Position Accuracy'] == "Low" ? 0 : 1, 
+              lon: msg['fields'].Longitude,
+              lat: msg['fields'].Latitude,
+              cog: radsToDeg(msg['fields'].COG).toFixed(0),
+              hdg: radsToDeg(msg['fields'].Heading).toFixed(0),
+            })
+          }
+          break;
+
+          case 129809:
+          {
+            enc =  new AisEncode({
+              aistype: 24, // class B static
+              repeat: 0,
+              part: 0,
+              mmsi: msg['fields']['User ID'],
+              shipname: msg['fields'].Name
+            })
+          }
+          break;
+
+          case 129810:
+          {
+            type = typeMapping[msg['fields']['Type of ship']]
+            enc =  new AisEncode({
+              aistype: 24, // class B static
+              repeat: 0,
+              part: 1,
+              mmsi: msg['fields']['User ID'],
+              cargo: type,
+              callsign: msg['fields'].Callsign,
+              dimA: msg['fields']["Position reference from Bow"],
+              dimB: msg['fields'].Length - msg['fields']["Position reference from Bow"],
+              dimC: msg['fields'].Beam - msg['fields']["Position reference from Starboard"],
+              dimD: msg['fields']["Position reference from Starboard"]
+            })
+          }
+          break;
+        }
+        if ( enc )
+        {
+          var sentence = enc.nmea
+          //debug("Decoded: " + util.inspect(new AisDecode(sentence, null), {showHidden: false, depth: 5}))
+          debug("sending: " + sentence)
+          app.emit('nmea0183out', sentence)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    })
+  }
+
+  plugin.stop = function() {
+  }
+
+  return plugin
+}
+         
 
 function radsToDeg(radians) {
   return radians * 180 / Math.PI
