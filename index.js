@@ -100,7 +100,7 @@ module.exports = function(app) {
   
   plugin.start = function(options) {
 
-    app.on("n2KAnalyzerOut", function(msg) {
+    app.on("N2KAnalyzerOut", function(msg) {
       try {
         var enc = null
         switch ( msg.pgn )
