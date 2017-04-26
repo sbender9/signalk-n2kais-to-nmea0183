@@ -1,6 +1,6 @@
 {
   "name": "signalk-n2kais-to-nmea0183",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Signal K provider to convert N2K AIS to NMEA 0183",
   "main": "index.js",
   "scripts": {

@@ -85,6 +85,45 @@ const typeMapping = {
   "Other (no additional information": 99
 }
 
+var assignedModeFlag = {
+  "Autonomous and continuous": 0,
+  "Assigned mode": 1
+}
+
+var atonTypeMapping = {
+  "Default: Type of AtoN not specified": 0,
+  "Referece point": 1,
+  "RACON": 2,
+  "Fixed structure off-shore": 3,
+  "Reserved for future use": 4,
+  "Fixed light: without sectors": 5,
+  "Fixed light: with sectors": 6,
+  "Fixed leading light front": 7,
+  "Fixed leading light rear": 8,
+  "Fixed beacon: cardinal N": 9,
+  "Fixed beacon: cardinal E": 10,
+  "Fixed beacon: cardinal S": 11,
+  "Fixed beacon: cardinal W": 12,
+  "Fixed beacon: port hand": 13,
+  "Fixed beacon: starboard hand": 14,
+  "Fixed beacon: preferred channel port hand": 15,
+  "Fixed beacon: preferred channel starboard hand": 16,
+  "Fixed beacon: isolated danger": 17,
+  "Fixed beacon: safe water": 18,
+  "Floating AtoN: cardinal N": 20,
+  "Floating AtoN: cardinal E": 21,
+  "Floating AtoN: cardinal S": 22,
+  "Floating AtoN: cardinal W": 23,
+  "Floating AtoN: port hand mark": 24,
+  "Floating AtoN: starboard hand mark": 25,
+  "Floating AtoN: preferred channel port hand": 26,
+  "Floating AtoN: preferred channel starboard hand": 27,
+  "Floating AtoN: isolated danger": 28,
+  "Floating AtoN: safe water": 29,
+  "Floating AtoN: special mark": 30,
+  "Floating AtoN: light vessel/LANBY/rigs": 31,
+}
+
 module.exports = function(app) {
   var plugin = {
   };
@@ -102,56 +141,57 @@ module.exports = function(app) {
 
     app.on("N2KAnalyzerOut", function(msg) {
       try {
-        var enc = null
+        var enc_msg = null
+        var fields = msg['fields']
         switch ( msg.pgn )
         {
           case 129038:
           {
             //debug("Data: " + util.inspect(msg, {showHidden: false, depth: 5}))
-            rot = msg['fields']['Rate of Turn']
+            var rot = fields['Rate of Turn']
             if ( rot !== undefined && rot != 0 )
             {
-              trot = rot < 0 ? rot * -1 : rot
-          debug("sqrt: " + Math.sqrt(trot))
+              var trot = rot < 0 ? rot * -1 : rot
               trot = (4.733 * Math.sqrt(trot * 3437.74677078493)).toFixed(0)
               if ( rot < 0 )
                 trot *= -1
               rot = trot
             }
-            enc = new AisEncode({
+            enc_msg = {
               aistype: 3, // class A position report
               repeat: 0,
-              mmsi: msg['fields']['User ID'],
-              navstatus: stateMapping[msg['fields']['Nav Status']],
-              sog: mpsToKn(msg['fields'].SOG),
-              lon: msg['fields'].Longitude,
-              lat: msg['fields'].Latitude,
-              cog: radsToDeg(msg['fields'].COG).toFixed(0),
-              hdg: radsToDeg(msg['fields'].Heading).toFixed(0),
+              mmsi: fields['User ID'],
+              navstatus: stateMapping[fields['Nav Status']],
+              sog: mpsToKn(fields.SOG),
+              lon: fields.Longitude,
+              lat: fields.Latitude,
+              cog: radsToDeg(fields.COG),
+              hdg: radsToDeg(fields.Heading),
               rot: rot
-            })
+            }
           }
           break;
           
           case 129794:
           {
-            type = typeMapping[msg['fields']['Type of ship']]
-            enc = new AisEncode({
+            var type = typeMapping[fields['Type of ship']]
+            enc_msg = {
               aistype: 5, //class A static
               repeat: 0,
-              mmsi: msg['fields']['User ID'],
-              mso: msg['fields']['IMO number'],
+              mmsi: fields['User ID'],
+              mso: fields['IMO number'],
               cargo: type,
-              callsign: msg['fields'].Callsign,
-              shipname: msg['fields'].Name,
-              dimA: msg['fields']["Position reference from Bow"],
-              dimB: msg['fields'].Length - msg['fields']["Position reference from Bow"],
-              dimC: msg['fields'].Beam - msg['fields']["Position reference from Starboard"],
-              dimD: msg['fields']["Position reference from Starboard"],
-              draught: msg['fields'].Draft/10,
-              destination: msg['fields'].Destination
-            })
-        
+              callsign: fields.Callsign,
+              shipname: fields.Name,
+              draught: fields.Draft/10,
+              destination: fields.Destination
+            }
+
+            putDimensions(enc_msg,
+                          fields["Position reference from Bow"],
+                          fields.Length,
+                          fields["Position reference from Starboard"],
+                          fields.Beam)
           }
           break;
 
@@ -159,56 +199,88 @@ module.exports = function(app) {
           {
             //debug("MMSI: " + msg.fields['User ID'])
             
-            enc =  new AisEncode({
+            enc_msg = {
               aistype: 18, // class B position report
               repeat: 0,
-              mmsi: msg['fields']['User ID'],
-              sog: mpsToKn(msg['fields'].SOG),
+              mmsi: fields['User ID'],
+              sog: mpsToKn(fields.SOG),
               accuracy: msg.fields['Position Accuracy'] == "Low" ? 0 : 1, 
-              lon: msg['fields'].Longitude,
-              lat: msg['fields'].Latitude,
-              cog: radsToDeg(msg['fields'].COG).toFixed(0),
-              hdg: radsToDeg(msg['fields'].Heading).toFixed(0),
-            })
+              lon: fields.Longitude,
+              lat: fields.Latitude,
+              cog: radsToDeg(fields.COG),
+              hdg: radsToDeg(fields.Heading),
+            }
           }
           break;
 
           case 129809:
           {
-            enc =  new AisEncode({
+            enc_msg = {
               aistype: 24, // class B static
               repeat: 0,
               part: 0,
-              mmsi: msg['fields']['User ID'],
-              shipname: msg['fields'].Name
-            })
+              mmsi: fields['User ID'],
+              shipname: fields.Name
+            }
           }
           break;
 
           case 129810:
           {
-            type = typeMapping[msg['fields']['Type of ship']]
-            enc =  new AisEncode({
+            var type = typeMapping[fields['Type of ship']]
+            enc_msg = {
               aistype: 24, // class B static
               repeat: 0,
               part: 1,
-              mmsi: msg['fields']['User ID'],
+              mmsi: fields['User ID'],
               cargo: type,
-              callsign: msg['fields'].Callsign,
-              dimA: msg['fields']["Position reference from Bow"],
-              dimB: msg['fields'].Length - msg['fields']["Position reference from Bow"],
-              dimC: msg['fields'].Beam - msg['fields']["Position reference from Starboard"],
-              dimD: msg['fields']["Position reference from Starboard"]
-            })
+              callsign: fields.Callsign,
+            }
+            putDimensions(enc_msg,
+                          fields["Position reference from Bow"],
+                          fields.Length,
+                          fields["Position reference from Starboard"],
+                          fields.Beam)
+          }
+          break;
+
+          case 129041:
+          {
+            var type = atonTypeMapping[fields['AtoN Type']]
+            var assigned = assignedModeFlag[fields['Assigned Mode Flag']]
+            enc_msg = {
+              aistype: 21, // AtoN report
+              repeat: 0,
+              mmsi: fields['User ID'],
+              aid_type: type,
+              atonname: fields['AtoN Name'],
+              accuracy: msg.fields['Position Accuracy'] == "Low" ? 0 : 1,
+              lon: fields.Longitude,
+              lat: fields.Latitude,
+              off_position: mapFlag(fields["Off Position Indicator"]),
+              raim: mapFlag(fields['AIS RAIM flag']),
+              virtual_aid: mapFlag(fields['Virtual AtoN Flag']),
+              assigned: assigned
+            }
+            putDimensions(enc_msg,
+                          fields["Position reference from Bow"],
+                          fields["AtoN Structure Length/Diameter"],
+                          fields["Position reference from Starboard"],
+                          fields["AtoN Structure Beam/Diameter"])
           }
           break;
         }
-        if ( enc )
+        if ( enc_msg )
         {
+          var enc = new AisEncode(enc_msg)
+          debug("Ais msg: " + util.inspect(enc_msg, {showHidden: false, depth: 1}))
           var sentence = enc.nmea
           //debug("Decoded: " + util.inspect(new AisDecode(sentence, null), {showHidden: false, depth: 5}))
-          debug("sending: " + sentence)
-          app.emit('nmea0183out', sentence)
+          if ( sentence && sentence.length > 0 )
+          {
+            debug("sending: " + sentence)
+            app.emit('nmea0183out', sentence)
+          }
         }
       } catch (e) {
         console.error(e)
@@ -224,9 +296,32 @@ module.exports = function(app) {
          
 
 function radsToDeg(radians) {
-  return radians * 180 / Math.PI
+  if ( radians )
+    return (radians * 180 / Math.PI).toFixed(0)
+  else
+    return radians
 }
 
 function mpsToKn(mps) {
-  return 1.9438444924574 * mps
+  if ( mps )
+    return 1.9438444924574 * mps
+  else
+    return mps
+}
+
+function mapFlag(flag)
+{
+  return flag == 'Yes' ? 1 : 0
+}
+
+function putDimensions(enc_msg, from_bow, length, from_stbrd, beam)
+{
+  if ( from_bow )
+    enc_msg.dimA = from_bow
+  if ( from_bow && length )
+    enc_msg.dimB = length - from_bow
+  if ( beam && from_stbrd )
+    enc_msg.dimC = beam - from_stbrd
+  if ( from_stbrd )
+    enc_msg.dimD = from_stbrd
 }
