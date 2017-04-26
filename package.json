@@ -1,6 +1,6 @@
 {
   "name": "signalk-n2kais-to-nmea0183",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Signal K provider to convert N2K AIS to NMEA 0183",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
   "author": "scott@scottbender.net",
   "license": "ISC",
   "dependencies": {
-    "ggencoder": "^0.1.17",
+    "ggencoder": "^0.1.18",
     "debug": "^2.2.0"
   },
   "repository": {
