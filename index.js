@@ -147,7 +147,6 @@ module.exports = function(app) {
         {
           case 129038:
           {
-            //debug("Data: " + util.inspect(msg, {showHidden: false, depth: 5}))
             var rot = fields['Rate of Turn']
             if ( rot !== undefined && rot != 0 )
             {
@@ -272,6 +271,8 @@ module.exports = function(app) {
         }
         if ( enc_msg )
         {
+          debug("Data: " + util.inspect(msg, {showHidden: false, depth: 5}))
+
           var enc = new AisEncode(enc_msg)
           debug("Ais msg: " + util.inspect(enc_msg, {showHidden: false, depth: 1}))
           var sentence = enc.nmea
@@ -316,12 +317,13 @@ function mapFlag(flag)
 
 function putDimensions(enc_msg, from_bow, length, from_stbrd, beam)
 {
-  if ( from_bow )
+  debug("putDimensions: " + from_bow + ", " + length + ", " + from_stbrd + ", " + beam)
+  if ( from_bow !== undefined )
     enc_msg.dimA = from_bow
-  if ( from_bow && length )
+  if ( from_bow !== undefined && length !== undefined )
     enc_msg.dimB = length - from_bow
-  if ( beam && from_stbrd )
+  if ( beam !== undefined && from_stbrd !== undefined )
     enc_msg.dimC = beam - from_stbrd
-  if ( from_stbrd )
+  if ( from_stbrd !== undefined )
     enc_msg.dimD = from_stbrd
 }
