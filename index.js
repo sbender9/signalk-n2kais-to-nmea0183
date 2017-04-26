@@ -129,7 +129,7 @@ module.exports = function(app) {
   };
 
   plugin.id = "signalk-n2kais-to-nmea0183"
-  plugin.name = "SignalK N2K AIS to NMEA0183"
+  plugin.name = "N2K AIS to NMEA0183"
   plugin.description = plugin.name
 
   plugin.schema = {
