@@ -127,6 +127,7 @@ var atonTypeMapping = {
 module.exports = function(app) {
   var plugin = {
   };
+  var n2kCallback = undefined
 
   plugin.id = "signalk-n2kais-to-nmea0183"
   plugin.name = "N2K AIS to NMEA0183"
@@ -139,7 +140,7 @@ module.exports = function(app) {
   
   plugin.start = function(options) {
 
-    app.on("N2KAnalyzerOut", function(msg) {
+    n2kCallback = (msg) => {
       try {
         var enc_msg = null
         var fields = msg['fields']
@@ -286,10 +287,16 @@ module.exports = function(app) {
       } catch (e) {
         console.error(e)
       }
-    })
+    }
+    app.on("N2KAnalyzerOut", n2kCallback)
   }
 
   plugin.stop = function() {
+    if ( n2kCallback )
+    {
+      app.removeListener("N2KAnalyzerOut", n2kCallback)
+      n2kCallback = undefined
+    }
   }
 
   return plugin
