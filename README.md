@@ -9,3 +9,5 @@ This does direct conversion from NMEA 2000 AIS messages to NMEA 0183 sentences a
 
 You can then get AIS data in apps like iSailor, iNavX, etc.
 
+Should also be used to send info about other vessels via the marinetrafficreporter plugin.
+
