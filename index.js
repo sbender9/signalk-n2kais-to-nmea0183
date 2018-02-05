@@ -1,12 +1,12 @@
-/*
- * Copyright 2016 Teppo Kurki <teppo.kurki@ıki.fi>
+/**
+ * Copyright 2018 Scott Bender (scott@scottbender.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
-
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,8 +16,6 @@
 
 const AisEncode = require("ggencoder").AisEncode
 const AisDecode = require("ggencoder").AisDecode
-const debug = require('debug')('signalk-n2kais-to-nmea0183')
-const util = require('util')
 
 const stateMapping = {
   'Under way using engine': 0,
@@ -197,7 +195,7 @@ module.exports = function(app) {
 
           case 129039:
           {
-            //debug("MMSI: " + msg.fields['User ID'])
+            //app.debug("MMSI: " + msg.fields['User ID'])
             
             enc_msg = {
               aistype: 18, // class B position report
@@ -272,15 +270,14 @@ module.exports = function(app) {
         }
         if ( enc_msg )
         {
-          debug("Data: " + util.inspect(msg, {showHidden: false, depth: 5}))
+          app.debug("Data: %o", msg)
 
           var enc = new AisEncode(enc_msg)
-          debug("Ais msg: " + util.inspect(enc_msg, {showHidden: false, depth: 1}))
+          app.debug("Ais msg: %o", enc_msg)
           var sentence = enc.nmea
-          //debug("Decoded: " + util.inspect(new AisDecode(sentence, null), {showHidden: false, depth: 5}))
           if ( sentence && sentence.length > 0 )
           {
-            debug("sending: " + sentence)
+            app.debug("sending: " + sentence)
             app.emit('nmea0183out', sentence)
           }
         }
@@ -324,7 +321,7 @@ function mapFlag(flag)
 
 function putDimensions(enc_msg, from_bow, length, from_stbrd, beam)
 {
-  debug("putDimensions: " + from_bow + ", " + length + ", " + from_stbrd + ", " + beam)
+  //debug("putDimensions: " + from_bow + ", " + length + ", " + from_stbrd + ", " + beam)
   if ( from_bow !== undefined )
     enc_msg.dimA = from_bow
   if ( from_bow !== undefined && length !== undefined )

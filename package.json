@@ -12,11 +12,10 @@
   "author": "scott@scottbender.net",
   "license": "ISC",
   "dependencies": {
-    "ggencoder": "^0.1.18",
-    "debug": "^3.1.0"
+    "ggencoder": "^0.1.18"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/sbender9/signalk-n2kais-to-nmea0183"
+    "type": "git",
+    "url": "https://github.com/sbender9/signalk-n2kais-to-nmea0183"
   }
 }
