@@ -12,7 +12,7 @@
   "author": "scott@scottbender.net",
   "license": "ISC",
   "dependencies": {
-    "ggencoder": "^0.1.18"
+    "ggencoder": "^1.0.4"
   },
   "repository": {
     "type": "git",
