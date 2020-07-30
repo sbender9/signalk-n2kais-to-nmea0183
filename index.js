@@ -133,15 +133,27 @@ module.exports = function(app) {
 
   plugin.schema = {
     type: "object",
-    properties: {}
+    properties: {
+      events: {
+        type: 'string',
+        title: 'NMEA 0183 Out Events',
+        default: 'nmea0183out',
+        description: 'can be comma separated list'
+      },
+    }
   }
   
   plugin.start = function(options) {
+    let eventsString = options.events || 'nmea0183out'
+    let events = eventsString.split(',').map(s => s.trim())
+    
+    app.debug('out events %j', events)
 
     n2kCallback = (msg) => {
       try {
         var enc_msg = null
         var fields = msg['fields']
+
         switch ( msg.pgn )
         {
           case 129038:
@@ -278,7 +290,9 @@ module.exports = function(app) {
           if ( sentence && sentence.length > 0 )
           {
             app.debug("sending: " + sentence)
-            app.emit('nmea0183out', sentence)
+            events.forEach(name => {
+              app.emit(name, sentence)
+            })
           }
         }
       } catch (e) {
