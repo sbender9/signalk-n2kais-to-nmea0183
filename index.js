@@ -146,6 +146,7 @@ module.exports = function(app) {
   plugin.start = function(options) {
     let eventsString = options.events || 'nmea0183out'
     let events = eventsString.split(',').map(s => s.trim())
+    const myMMSI = app.getSelfPath('mmsi')
     
     app.debug('out events %j', events)
 
@@ -158,26 +159,28 @@ module.exports = function(app) {
         {
           case 129038:
           {
-            var rot = fields['Rate of Turn']
-            if ( rot !== undefined && rot != 0 )
-            {
-              var trot = rot < 0 ? rot * -1 : rot
-              trot = (4.733 * Math.sqrt(trot * 3437.74677078493)).toFixed(0)
-              if ( rot < 0 )
-                trot *= -1
-              rot = trot
-            }
-            enc_msg = {
-              aistype: 3, // class A position report
-              repeat: 0,
-              mmsi: fields['User ID'],
-              navstatus: stateMapping[fields['Nav Status']],
+            if ( fields['AIS Transceiver information'] !== 'Own information not broadcast' ) {
+              var rot = fields['Rate of Turn']
+              if ( rot !== undefined && rot != 0 )
+              {
+                var trot = rot < 0 ? rot * -1 : rot
+                trot = (4.733 * Math.sqrt(trot * 3437.74677078493)).toFixed(0)
+                if ( rot < 0 )
+                  trot *= -1
+                rot = trot
+              }
+              enc_msg = {
+                aistype: 3, // class A position report
+                repeat: 0,
+                mmsi: fields['User ID'],
+                navstatus: stateMapping[fields['Nav Status']],
               sog: mpsToKn(fields.SOG),
-              lon: fields.Longitude,
-              lat: fields.Latitude,
-              cog: radsToDeg(fields.COG),
-              hdg: radsToDeg(fields.Heading),
-              rot: rot
+                lon: fields.Longitude,
+                lat: fields.Latitude,
+                cog: radsToDeg(fields.COG),
+                hdg: radsToDeg(fields.Heading),
+                rot: rot
+              }
             }
           }
           break;
@@ -208,17 +211,19 @@ module.exports = function(app) {
           case 129039:
           {
             //app.debug("MMSI: " + msg.fields['User ID'])
-            
-            enc_msg = {
-              aistype: 18, // class B position report
-              repeat: 0,
-              mmsi: fields['User ID'],
-              sog: mpsToKn(fields.SOG),
-              accuracy: msg.fields['Position Accuracy'] == "Low" ? 0 : 1, 
-              lon: fields.Longitude,
-              lat: fields.Latitude,
-              cog: radsToDeg(fields.COG),
-              hdg: radsToDeg(fields.Heading),
+
+            if (fields['AIS Transceiver information'] !== 'Own information not broadcast' ) {
+              enc_msg = {
+                aistype: 18, // class B position report
+                repeat: 0,
+                mmsi: fields['User ID'],
+                sog: mpsToKn(fields.SOG),
+                accuracy: fields['Position Accuracy'] == "Low" ? 0 : 1, 
+                lon: fields.Longitude,
+                lat: fields.Latitude,
+                cog: radsToDeg(fields.COG),
+                hdg: radsToDeg(fields.Heading),
+              }
             }
           }
           break;
@@ -282,6 +287,10 @@ module.exports = function(app) {
         }
         if ( enc_msg )
         {
+          if ( myMMSI && fields['User ID'] == myMMSI ) {
+            return
+          }
+          
           app.debug("Data: %o", msg)
 
           var enc = new AisEncode(enc_msg)
