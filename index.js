@@ -140,6 +140,11 @@ module.exports = function(app) {
         default: 'nmea0183out',
         description: 'can be comma separated list'
       },
+      sendSelf: {
+        type: 'boolean',
+        title: 'Send self data',
+        default: false
+      }
     }
   }
   
@@ -159,7 +164,9 @@ module.exports = function(app) {
         {
           case 129038:
           {
-            if ( fields['AIS Transceiver information'] !== 'Own information not broadcast' ) {
+            app.debug("MMSI: " + msg.fields['User ID'])
+            
+            if ( fields['AIS Transceiver information'] !== 'Own information not broadcast' || options.sendSelf ) {
               var rot = fields['Rate of Turn']
               if ( rot !== undefined && rot != 0 )
               {
@@ -210,9 +217,9 @@ module.exports = function(app) {
 
           case 129039:
           {
-            //app.debug("MMSI: " + msg.fields['User ID'])
+            app.debug("MMSI: " + msg.fields['User ID'])
 
-            if (fields['AIS Transceiver information'] !== 'Own information not broadcast' ) {
+            if (fields['AIS Transceiver information'] !== 'Own information not broadcast' || options.sendSelf ) {
               enc_msg = {
                 aistype: 18, // class B position report
                 repeat: 0,
@@ -287,7 +294,7 @@ module.exports = function(app) {
         }
         if ( enc_msg )
         {
-          if ( myMMSI && fields['User ID'] == myMMSI ) {
+          if ( !options.sendSelf && myMMSI && fields['User ID'] == myMMSI ) {
             return
           }
           
