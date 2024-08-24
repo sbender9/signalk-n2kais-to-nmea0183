@@ -309,7 +309,9 @@ module.exports = function(app) {
             events.forEach(name => {
               app.emit(name, sentence)
             })
-            app.reportOutputMessages(events.length)
+            if ( app.reportOutputMessages ) {
+              app.reportOutputMessages(events.length)
+            }
           }
         }
       } catch (e) {
