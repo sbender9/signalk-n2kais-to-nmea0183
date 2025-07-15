@@ -30,7 +30,8 @@ import {
   NavStatusValues,
   ShipTypeValues,
   AisAssignedModeValues,
-  AtonTypeValues
+  AtonTypeValues,
+  AtonType
 } from '@canboat/ts-pgns'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -146,15 +147,13 @@ export function convert(
           userId = pgn.fields.userId
           const type =
             pgn.fields.typeOfShip !== undefined
-              ? ShipTypeValues[
-                  pgn.fields.typeOfShip as keyof typeof ShipTypeValues
-                ]
+              ? ShipTypeValues[pgn.fields.typeOfShip]
               : undefined
           enc_msg = {
             aistype: 5, //class A static
             repeat: 0,
             mmsi: pgn.fields.userId,
-            mso: pgn.fields.imoNumber,
+            imo: pgn.fields.imoNumber,
             cargo: type,
             callsign: pgn.fields.callsign,
             shipname: pgn.fields.name,
@@ -221,9 +220,7 @@ export function convert(
           userId = pgn.fields.userId
           const type =
             pgn.fields.typeOfShip !== undefined
-              ? ShipTypeValues[
-                  pgn.fields.typeOfShip as keyof typeof ShipTypeValues
-                ]
+              ? ShipTypeValues[pgn.fields.typeOfShip]
               : undefined
           enc_msg = {
             aistype: 24, // class B static
@@ -249,10 +246,8 @@ export function convert(
           userId = pgn.fields.userId
           const type =
             pgn.fields.atonType !== undefined
-              ? AtonTypeValues[
-                  pgn.fields.atonType as unknown as keyof typeof AtonTypeValues
-                ]
-              : undefined
+                ? AtonTypeValues[pgn.fields.atonType]
+                : undefined
           const assigned =
             AisAssignedModeValues[
               pgn.fields

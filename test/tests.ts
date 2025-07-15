@@ -1,5 +1,6 @@
 import { expect, assert } from 'chai'
 import { convert, mpsToKn, radsToDeg, convRot } from '../dist/index'
+import { ShipType, ShipTypeValues, AtonTypeValues, AtonType } from '@canboat/ts-pgns'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { AisDecode } = require('ggencoder')
 
@@ -30,7 +31,7 @@ describe('sk-to-nmea2000 tests', () => {
         communicationState: 34965,
         aisTransceiverInformation: 'Channel A VDL reception',
         heading: 0.0698,
-        rateOfTurn: 10,
+        rateOfTurn:  -0.00031,
         navStatus: 'Under way using engine',
         specialManeuverIndicator: 'Not available',
         reserved: 0,
@@ -40,19 +41,20 @@ describe('sk-to-nmea2000 tests', () => {
     }
     const expected = {
       valid: true,
+      error: '',
       msglen: 28,
       channel: 'A',
       aistype: 3,
       repeat: 0,
       mmsi: pgn.fields.userId.toString(),
       immsi: pgn.fields.userId,
+      mmsikey: pgn.fields.userId.toString(),
       class: 'A',
       navstatus: 0,
       lon: -76.38598666666667,
       lat: 39.074605,
-      //rot: convRot(pgn.fields.rateOfTurn),
-      rot: 109,
-      sog: 3.8,
+      rot: truncateWithoutRounding(convRot(pgn.fields.rateOfTurn), 0),
+      sog: truncateWithoutRounding(mpsToKn(pgn.fields.sog), 1),
       cog: Number(radsToDeg(pgn.fields.cog)),
       hdg: Number(radsToDeg(pgn.fields.heading)),
       utc: 60,
@@ -111,12 +113,14 @@ describe('sk-to-nmea2000 tests', () => {
 
     const expected = {
       valid: true,
+      error: '',
       msglen: 28,
       channel: 'A',
       aistype: 18,
       repeat: 0,
-      mmsi: '338184312',
-      immsi: 338184312,
+      mmsi: pgn.fields.userId.toString(),
+      immsi: pgn.fields.userId,
+      mmsikey: pgn.fields.userId.toString(),
       class: 'B',
       status: -1,
       lon: -76.46400166666666,
@@ -155,10 +159,10 @@ describe('sk-to-nmea2000 tests', () => {
         messageId: 'Static and voyage related data',
         repeatIndicator: 'Initial',
         userId: 367307850,
-        imoNumber: 0,
+        imoNumber: 9235983,
         callsign: 'WDD9171',
         name: 'ATLANTIC COAST',
-        typeOfShip: 'Tug',
+        typeOfShip: 'Wing In Ground',
         length: 30,
         beam: 7,
         positionReferenceFromStarboard: 0,
@@ -178,17 +182,19 @@ describe('sk-to-nmea2000 tests', () => {
 
     const expected = {
       valid: true,
+      error: '',
       msglen: 71,
       channel: 'A',
       aistype: 5,
       repeat: 0,
-      mmsi: '367307850',
-      immsi: 367307850,
+      mmsi: pgn.fields.userId.toString(),
+      immsi: pgn.fields.userId,
+      mmsikey: pgn.fields.userId.toString(),
       class: 'A',
-      imo: 0,
+      imo: 9235983,
       callsign: 'WDD9171',
       shipname: 'ATLANTIC COAST',
-      cargo: 52,
+      cargo: ShipTypeValues[ShipType.WingInGround],
       dimA: 9,
       dimB: 21,
       dimC: 7,
@@ -239,12 +245,14 @@ describe('sk-to-nmea2000 tests', () => {
 
     const expected = {
       valid: true,
+      error: '',
       msglen: 27,
       channel: 'A',
       aistype: 24,
       repeat: 0,
-      mmsi: '338184312',
-      immsi: 338184312,
+      mmsi: pgn.fields.userId.toString(),
+      immsi: pgn.fields.userId,
+      mmsikey: pgn.fields.userId.toString(),
       class: 'B',
       part: 0,
       shipname: 'WILHELM'
@@ -289,22 +297,25 @@ describe('sk-to-nmea2000 tests', () => {
         spare13: 0,
         gnssType: 'Default: undefined',
         aisTransceiverInformation: 'Channel A VDL transmission',
-        reserved16: 0
+        reserved16: 0,
+        callsign: 'HELLO'
       }
     }
 
     const expected = {
       valid: true,
+      error: '',
       msglen: 28,
       channel: 'A',
       aistype: 24,
       repeat: 0,
-      mmsi: '338184312',
-      immsi: 338184312,
+      mmsi: pgn.fields.userId.toString(),
+      immsi: pgn.fields.userId,
+      mmsikey: pgn.fields.userId.toString(),
       class: 'B',
       part: 1,
-      cargo: 36,
-      callsign: '',
+      cargo: ShipTypeValues[ShipType.Sailing],
+      callsign: pgn.fields.callsign,
       dimA: 6,
       dimB: 3,
       dimC: 2,
@@ -362,14 +373,16 @@ describe('sk-to-nmea2000 tests', () => {
 
     const expected = {
       valid: true,
-      msglen: 45,
+      error: '',
+      msglen: 46,
       channel: 'A',
       aistype: 21,
       repeat: 0,
-      mmsi: '993672309',
-      immsi: 993672309,
+      mmsi: pgn.fields.userId.toString(),
+      immsi: pgn.fields.userId,
+      mmsikey: pgn.fields.userId.toString(),
       class: '-',
-      aidtype: 0,
+      aidtype: AtonTypeValues[AtonType.FixedBeaconStarboardHand],
       shipname: 'NC',
       lon: -76.52692833333333,
       lat: 39.21808166666667,
@@ -381,6 +394,7 @@ describe('sk-to-nmea2000 tests', () => {
       width: 0,
       utc: 60,
       offpos: 0,
+      virtual: 1,
       txt: ''
     }
 
@@ -400,3 +414,8 @@ describe('sk-to-nmea2000 tests', () => {
     }
   })
 })
+
+function truncateWithoutRounding(num, decimalPlaces) {
+  const factor = Math.pow(10, decimalPlaces);
+  return Math.trunc(num * factor) / factor;
+}
