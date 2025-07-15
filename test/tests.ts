@@ -9,7 +9,12 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { AisDecode } = require('ggencoder')
 
-const app = { debug: () => {} }
+const app = {
+  debug: () => {},
+  config: {
+    version: '2.15.0'
+  }
+}
 const options = { sendSelf: true }
 const events = []
 

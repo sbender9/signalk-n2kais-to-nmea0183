@@ -75,17 +75,19 @@ export default function (app: any) {
         options,
         myMMSI,
         events,
-        convertNamesToCamel(app, msg)
+        msg
       )
 
-      const sentence = enc.nmea
-      if (sentence && sentence.length > 0) {
-        app.debug('sending: ' + sentence)
-        events.forEach((name: string) => {
-          app.emit(name, sentence)
-        })
-        if (app.reportOutputMessages) {
-          app.reportOutputMessages(events.length)
+      if ( enc ) {
+        const sentence = enc.nmea
+        if (sentence && sentence.length > 0) {
+          app.debug('sending: ' + sentence)
+          events.forEach((name: string) => {
+            app.emit(name, sentence)
+          })
+          if (app.reportOutputMessages) {
+            app.reportOutputMessages(events.length)
+          }
         }
       }
     }
@@ -117,7 +119,7 @@ export function convert(
     switch (msg.pgn) {
       case 129038:
         {
-          const pgn: PGN_129038 = msg as PGN_129038
+          const pgn: PGN_129038 = convertNamesToCamel(app, msg) as PGN_129038
           userId = pgn.fields.userId
           app.debug('MMSI: ' + userId)
 
@@ -149,7 +151,7 @@ export function convert(
 
       case 129794:
         {
-          const pgn: PGN_129794 = msg as PGN_129794
+          const pgn: PGN_129794 = convertNamesToCamel(app, msg) as PGN_129794
           userId = pgn.fields.userId
           const type =
             pgn.fields.typeOfShip !== undefined
@@ -181,7 +183,7 @@ export function convert(
 
       case 129039:
         {
-          const pgn: PGN_129039 = msg as PGN_129039
+          const pgn: PGN_129039 = convertNamesToCamel(app, msg) as PGN_129039
           userId = pgn.fields.userId
           app.debug('MMSI: ' + pgn.fields.userId)
 
@@ -208,7 +210,7 @@ export function convert(
 
       case 129809:
         {
-          const pgn: PGN_129809 = msg as PGN_129809
+          const pgn: PGN_129809 = convertNamesToCamel(app, msg) as PGN_129809
           userId = pgn.fields.userId
           enc_msg = {
             aistype: 24, // class B static
@@ -222,7 +224,7 @@ export function convert(
 
       case 129810:
         {
-          const pgn: PGN_129810 = msg as PGN_129810
+          const pgn: PGN_129810 = convertNamesToCamel(app, msg) as PGN_129810
           userId = pgn.fields.userId
           const type =
             pgn.fields.typeOfShip !== undefined
@@ -248,7 +250,7 @@ export function convert(
 
       case 129041:
         {
-          const pgn: PGN_129041 = msg as PGN_129041
+          const pgn: PGN_129041 = convertNamesToCamel(app, msg) as PGN_129041
           userId = pgn.fields.userId
           const type =
             pgn.fields.atonType !== undefined
