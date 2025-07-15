@@ -31,7 +31,7 @@ import {
   ShipTypeValues,
   AisAssignedModeValues,
   AtonTypeValues,
-  AtonType
+  convertNamesToCamel
 } from '@canboat/ts-pgns'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -70,7 +70,13 @@ export default function (app: any) {
     app.debug('out events %j', events)
 
     n2kCallback = (msg: PGN) => {
-      const enc = convert(app, options, myMMSI, events, msg)
+      const enc = convert(
+        app,
+        options,
+        myMMSI,
+        events,
+        convertNamesToCamel(app, msg)
+      )
 
       const sentence = enc.nmea
       if (sentence && sentence.length > 0) {
@@ -246,8 +252,8 @@ export function convert(
           userId = pgn.fields.userId
           const type =
             pgn.fields.atonType !== undefined
-                ? AtonTypeValues[pgn.fields.atonType]
-                : undefined
+              ? AtonTypeValues[pgn.fields.atonType]
+              : undefined
           const assigned =
             AisAssignedModeValues[
               pgn.fields

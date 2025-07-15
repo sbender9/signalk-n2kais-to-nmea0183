@@ -1,6 +1,11 @@
 import { expect, assert } from 'chai'
 import { convert, mpsToKn, radsToDeg, convRot } from '../dist/index'
-import { ShipType, ShipTypeValues, AtonTypeValues, AtonType } from '@canboat/ts-pgns'
+import {
+  ShipType,
+  ShipTypeValues,
+  AtonTypeValues,
+  AtonType
+} from '@canboat/ts-pgns'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { AisDecode } = require('ggencoder')
 
@@ -31,7 +36,7 @@ describe('sk-to-nmea2000 tests', () => {
         communicationState: 34965,
         aisTransceiverInformation: 'Channel A VDL reception',
         heading: 0.0698,
-        rateOfTurn:  -0.00031,
+        rateOfTurn: -0.00031,
         navStatus: 'Under way using engine',
         specialManeuverIndicator: 'Not available',
         reserved: 0,
@@ -416,6 +421,6 @@ describe('sk-to-nmea2000 tests', () => {
 })
 
 function truncateWithoutRounding(num, decimalPlaces) {
-  const factor = Math.pow(10, decimalPlaces);
-  return Math.trunc(num * factor) / factor;
+  const factor = Math.pow(10, decimalPlaces)
+  return Math.trunc(num * factor) / factor
 }
