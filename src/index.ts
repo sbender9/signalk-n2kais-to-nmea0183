@@ -70,15 +70,9 @@ export default function (app: any) {
     app.debug('out events %j', events)
 
     n2kCallback = (msg: PGN) => {
-      const enc = convert(
-        app,
-        options,
-        myMMSI,
-        events,
-        msg
-      )
+      const enc = convert(app, options, myMMSI, events, msg)
 
-      if ( enc ) {
+      if (enc) {
         const sentence = enc.nmea
         if (sentence && sentence.length > 0) {
           app.debug('sending: ' + sentence)
