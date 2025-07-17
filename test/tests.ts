@@ -88,7 +88,7 @@ versions.forEach((version) => {
       }
 
       try {
-        const enc = convert(app, options, 'xxx', [], pgn)
+        const enc = convert(app, options, 'xxx', pgn)
 
         const dec = { ...new AisDecode(enc.nmea) }
 
@@ -158,7 +158,7 @@ versions.forEach((version) => {
       }
 
       try {
-        const enc = convert(app, options, 'xxx', [], pgn)
+        const enc = convert(app, options, 'xxx', pgn)
 
         const dec = { ...new AisDecode(enc.nmea) }
 
@@ -236,7 +236,7 @@ versions.forEach((version) => {
       }
 
       try {
-        const enc = convert(app, options, 'xxx', [], pgn)
+        const enc = convert(app, options, 'xxx', pgn)
 
         const dec = { ...new AisDecode(enc.nmea) }
 
@@ -285,7 +285,7 @@ versions.forEach((version) => {
       }
 
       try {
-        const enc = convert(app, options, 'xxx', [], pgn)
+        const enc = convert(app, options, 'xxx', pgn)
 
         const dec = { ...new AisDecode(enc.nmea) }
 
@@ -351,7 +351,7 @@ versions.forEach((version) => {
       }
 
       try {
-        const enc = convert(app, options, 'xxx', [], pgn)
+        const enc = convert(app, options, 'xxx', pgn)
 
         const dec = { ...new AisDecode(enc.nmea) }
 
@@ -425,7 +425,7 @@ versions.forEach((version) => {
       }
 
       try {
-        const enc = convert(app, options, 'xxx', [], pgn)
+        const enc = convert(app, options, 'xxx', pgn)
 
         const dec = { ...new AisDecode(enc.nmea) }
 

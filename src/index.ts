@@ -70,7 +70,7 @@ export default function (app: any) {
     app.debug('out events %j', events)
 
     n2kCallback = (msg: PGN) => {
-      const enc = convert(app, options, myMMSI, events, msg)
+      const enc = convert(app, options, myMMSI, msg)
 
       if (enc) {
         const sentence = enc.nmea
@@ -103,7 +103,6 @@ export function convert(
   app: any,
   options: any,
   myMMSI: string,
-  events: string[],
   msg: any
 ) {
   try {
