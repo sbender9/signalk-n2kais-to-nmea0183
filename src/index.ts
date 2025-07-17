@@ -104,7 +104,7 @@ export function convert(
   options: any,
   myMMSI: string,
   events: string[],
-  msg: PGN
+  msg: any
 ) {
   try {
     let enc_msg: any = null
