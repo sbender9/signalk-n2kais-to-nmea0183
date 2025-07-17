@@ -14,12 +14,12 @@ const { AisDecode } = require('ggencoder')
 
 const options = { sendSelf: true }
 const events = []
-const versions = ['2.14.0', '2.15.0']
+const versions = ['2.14.0', '2.15.0', '2.15.0-beta.3', '2.14.0-beta.3']
 
 setSupportsCamelCaseCacheEnabled(false)
 
 function convertToCorrectInput(version: string, pgn: any) {
-  if (version === '2.14.0') {
+  if (version.startsWith('2.14.0')) {
     return mapCamelCaseKeys(pgn)
   }
   return pgn
