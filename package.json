@@ -1,6 +1,6 @@
 {
   "name": "signalk-n2kais-to-nmea0183",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Plugin to convert NMEA2000 AIS to NMEA 0183",
   "main": "dist/index.js",
   "scripts": {
