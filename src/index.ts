@@ -99,12 +99,7 @@ export default function (app: any) {
   return plugin
 }
 
-export function convert(
-  app: any,
-  options: any,
-  myMMSI: string,
-  msg: any
-) {
+export function convert(app: any, options: any, myMMSI: string, msg: any) {
   try {
     let enc_msg: any = null
     let userId
