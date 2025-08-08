@@ -156,7 +156,7 @@ export function convert(app: any, options: any, myMMSI: string, msg: any) {
             destination: pgn.fields.destination
           }
           if (pgn.fields.draft !== undefined) {
-            enc_msg.draught = pgn.fields.draft / 10
+            enc_msg.draught = pgn.fields.draft
           }
 
           putDimensions(

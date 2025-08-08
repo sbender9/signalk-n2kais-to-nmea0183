@@ -229,7 +229,7 @@ versions.forEach((version) => {
         etaDay: 0,
         etaHr: 0,
         etaMin: 0,
-        draught: 4,
+        draught: 4.2,
         destination: 'BALTIMORE',
         length: 30,
         width: 7
