@@ -153,8 +153,8 @@ versions.forEach((version) => {
         lat: 39.070026666666664,
         sog: 4.7,
         cog: 122,
-        hdg: 122,
-        utc: 56
+        hdg: 511,
+        utc: 60
       }
 
       try {
